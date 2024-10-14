@@ -1,14 +1,18 @@
 package com.enocaproject.enoca_project.service;
 
-import com.enocaproject.enoca_project.dao.OrderRepository; // Siparişleri yönetmek için bir DAO oluşturmalısın
-import com.enocaproject.enoca_project.entity.Order;
-import com.enocaproject.enoca_project.entity.Product;
-import com.enocaproject.enoca_project.general.ProductNotFoundException;
+import com.enocaproject.enoca_project.dao.CartRepository;
+import com.enocaproject.enoca_project.dao.CustomerRepository;
+import com.enocaproject.enoca_project.dao.OrderRepository;
+import com.enocaproject.enoca_project.entity.*;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,22 +27,66 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private ProductService productService;
 
+    @Autowired
+    private CustomerRepository customerRepository;
+
+    @Autowired
+    private CartRepository cartRepository;
+
+    @Autowired
+    private CartService cartService;
+
     @Override
-    public Order PlaceOrder(Long productId, Long customerId) {
+    @Transactional
+    public Order PlaceOrder(Long customerId) {
+        // Müşteriyi ID ile bul
+        Customer customer = customerRepository.findById(customerId).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer not found with ID: " + customerId)
+        );
 
-        Product product = productService.GetProduct(productId)
-                .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + productId));
+        // Müşterinin sepetini bul
+        Cart cart = cartRepository.findByCustomer(customer).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cart not found for customer with ID: " + customerId)
+        );
 
-        if (product.getStockQuantity() <= 0) {
-            throw new ProductNotFoundException("Ürün stokta yok");
+        // Sepet boşsa hata döndür
+        if (cart.getCartItems().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The cart is empty, cannot place an order.");
         }
 
+        // Yeni sipariş oluşturma
         Order order = new Order();
-        order.setProduct_id(productId);
-        order.setCustomerId(customerId);
-        return orderRepository.save(order);
-    }
+        order.setCustomer(customer);  // Siparişe müşteri bilgisini ekle
 
+        BigDecimal totalOrderPrice = BigDecimal.ZERO;
+
+        // Sepetteki ürünleri siparişe ekle
+        for (CartItem cartItem : cart.getCartItems()) {
+            Product product = cartItem.getProduct();
+            int quantity = cartItem.getQuantity();
+
+            // Ürün bilgilerini siparişe ekle
+            order.setProduct_name(product.getName());
+            order.setProduct_price(product.getPrice());
+            order.setPiece(quantity);
+
+            // Toplam sipariş fiyatını hesapla
+            totalOrderPrice = totalOrderPrice.add(product.getPrice().multiply(BigDecimal.valueOf(quantity)));
+
+            // Stok güncelle
+            product.setStockQuantity(product.getStockQuantity() - quantity);
+            productService.CreateProduct(product);
+        }
+
+        // Siparişi kaydet
+        orderRepository.save(order);
+
+        // Sepeti boşalt
+         cartService.EmptyCart(cart.getId());
+
+        // Sipariş bilgilerini döndür
+        return order;
+    }
     @Override
     public Order GetOrderForCode(Long id) {
         Optional<Order> order = orderRepository.findById(id);
@@ -51,6 +99,12 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<Order> GetAllOrdersForCustomer(Long customerId) {
-        return orderRepository.findAllByCustomerId(customerId);
+        // Müşteriyi ID ile bulma. Eğer bulunamazsa hata fırlatıyoruz.
+        Customer customer = customerRepository.findById(customerId).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer not found with ID: " + customerId)
+        );
+
+        // Müşteriye ait tüm siparişleri döndürüyoruz
+        return orderRepository.findAllByCustomer(customer);
     }
 }

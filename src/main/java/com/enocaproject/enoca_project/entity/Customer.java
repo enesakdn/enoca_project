@@ -1,9 +1,10 @@
 package com.enocaproject.enoca_project.entity;
 
 import com.enocaproject.enoca_project.general.BaseEntity;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
+
+import java.util.List;
 
 @Data
 @Entity
@@ -12,7 +13,11 @@ public class Customer extends BaseEntity {
 
     private String firstName;
     private String lastName;
-    private String email;
-    private String phoneNumber;
 
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "cart_id", referencedColumnName = "id")
+    private Cart cart;
+
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
+    private List<Order> orders;
 }

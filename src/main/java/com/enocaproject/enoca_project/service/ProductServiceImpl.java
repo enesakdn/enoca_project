@@ -32,9 +32,9 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Product UpdateProduct(Product product) {
         if (productRepository.existsById(product.getId())) {
-            return productRepository.save(product); // Var olan ürünü güncelle
+            return productRepository.save(product);
         } else {
-            throw new RuntimeException("Product not found with id: " + product.getId()); // Ürün bulunamazsa hata fırlat
+            throw new RuntimeException("Product not found with id: " + product.getId());
         }
     }
 
