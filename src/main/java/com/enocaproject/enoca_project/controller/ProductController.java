@@ -1,5 +1,6 @@
 package com.enocaproject.enoca_project.controller;
 
+import com.enocaproject.enoca_project.dto.ProductDTO; // Import the DTO
 import com.enocaproject.enoca_project.entity.Product;
 import com.enocaproject.enoca_project.service.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +18,12 @@ public class ProductController {
     private final ProductService productService;
 
     @PostMapping
-    public ResponseEntity<Product> createProduct( @RequestBody Product product) {
+    public ResponseEntity<Product> createProduct(@RequestBody ProductDTO productDTO) {
+        Product product = new Product();
+        product.setName(productDTO.name());
+        product.setPrice(productDTO.price());
+        product.setStockQuantity(productDTO.stockQuantity());
+
         Product createdProduct = productService.CreateProduct(product);
         return new ResponseEntity<>(createdProduct, HttpStatus.CREATED);
     }
@@ -29,8 +35,13 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Product> updateProduct(@PathVariable Long id,  @RequestBody Product product) {
+    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody ProductDTO productDTO) {
+        Product product = new Product();
         product.setId(id);
+        product.setName(productDTO.name());
+        product.setPrice(productDTO.price());
+        product.setStockQuantity(productDTO.stockQuantity());
+
         Product updatedProduct = productService.UpdateProduct(product);
         return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
     }
