@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -55,6 +56,7 @@ public class OrderServiceImpl implements OrderService {
 
         Order order = new Order();
         order.setCustomer(customer);
+        order.setOrderDate(LocalDateTime.now());
 
         BigDecimal totalOrderPrice = BigDecimal.ZERO;
 
@@ -108,7 +110,8 @@ public class OrderServiceImpl implements OrderService {
                 new CustomerDTO(order.getCustomer().getFirstName(),
                         order.getCustomer().getLastName(),
                         order.getCustomer().getEmail()),
-                itemDTOs
+                itemDTOs,
+                order.getOrderDate()
         );
     }
 
