@@ -1,7 +1,6 @@
 package com.enocaproject.enoca_project.controller;
 
-import com.enocaproject.enoca_project.dto.CartResponseDTO; // DTO sınıfını ekle
-import com.enocaproject.enoca_project.entity.Cart;
+import com.enocaproject.enoca_project.dto.CartResponseDTO;
 import com.enocaproject.enoca_project.service.CartService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,12 +20,15 @@ public class CartController {
         return new ResponseEntity<>(cartResponse, HttpStatus.OK);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<CartResponseDTO> updateCart(@PathVariable Long id, @RequestBody Cart cart) {
-        cart.setId(id);
-        CartResponseDTO updatedCartResponse = cartService.UpdateCart(cart);
+    @PutMapping("/{cartId}/products/{productId}/quantity")
+    public ResponseEntity<CartResponseDTO> updateProductQuantity(
+            @PathVariable Long cartId,
+            @PathVariable Long productId,
+            @RequestParam int quantity) {
+        CartResponseDTO updatedCartResponse = cartService.updateProductQuantity(cartId, productId, quantity);
         return new ResponseEntity<>(updatedCartResponse, HttpStatus.OK);
     }
+
 
     @DeleteMapping("/{id}/empty")
     public ResponseEntity<CartResponseDTO> emptyCart(@PathVariable Long id) {

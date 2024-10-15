@@ -33,13 +33,33 @@ public class CartServiceImpl implements CartService {
 
     @Override
     @Transactional
-    public CartResponseDTO UpdateCart(Cart cart) {
-        if (cart == null || cart.getId() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid cart data");
+    public CartResponseDTO updateProductQuantity(Long cartId, Long productId, int quantity) {
+        Cart cart = cartRepository.findById(cartId).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cart not found with ID: " + cartId)
+        );
+
+        CartItem cartItem = cart.getCartItems().stream()
+                .filter(item -> item.getProduct().getId().equals(productId))
+                .findFirst()
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found in the cart with ID: " + productId));
+
+        if (cartItem.getProduct().getStockQuantity() < quantity) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not enough stock for product: " + cartItem.getProduct().getName());
         }
+
+        cartItem.setQuantity(quantity);
+
+        BigDecimal newTotalPrice = cart.getCartItems().stream()
+                .map(item -> item.getProduct().getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        cart.setTotalPrice(newTotalPrice);
+
         Cart updatedCart = cartRepository.save(cart);
+
         return toCartResponseDTO(updatedCart);
     }
+
 
     @Override
     @Transactional
@@ -73,24 +93,43 @@ public class CartServiceImpl implements CartService {
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found with ID: " + productId)
         );
 
-
         if (product.getStockQuantity() < quantity) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not enough stock for product: " + product.getName());
         }
 
+        CartItem existingCartItem = cart.getCartItems().stream()
+                .filter(item -> item.getProduct().getId().equals(productId))
+                .findFirst()
+                .orElse(null);
 
-        CartItem cartItem = new CartItem();
-        cartItem.setProduct(product);
-        cartItem.setCart(cart);
-        cartItem.setQuantity(quantity);
+        if (existingCartItem != null) {
+            int newQuantity = existingCartItem.getQuantity() + quantity;
 
-        cart.getCartItems().add(cartItem);
-        cart.setTotalPrice(cart.getTotalPrice().add(product.getPrice().multiply(BigDecimal.valueOf(quantity))));
+            if (product.getStockQuantity() < newQuantity) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not enough stock to add more of product: " + product.getName());
+            }
+
+            existingCartItem.setQuantity(newQuantity);
+        } else {
+            // Ürün sepette yoksa yeni CartItem oluştur ve ekle
+            CartItem newCartItem = new CartItem();
+            newCartItem.setProduct(product);
+            newCartItem.setCart(cart);
+            newCartItem.setQuantity(quantity);
+            cart.getCartItems().add(newCartItem);
+        }
+
+        // Toplam fiyatı güncelle
+        cart.setTotalPrice(cart.getCartItems().stream()
+                .map(item -> item.getProduct().getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add));
+
         productRepository.save(product);
-
         Cart updatedCart = cartRepository.save(cart);
+
         return toCartResponseDTO(updatedCart);
     }
+
 
     @Override
     @Transactional

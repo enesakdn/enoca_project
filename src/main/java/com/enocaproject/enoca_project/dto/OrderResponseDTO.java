@@ -1,6 +1,16 @@
 package com.enocaproject.enoca_project.dto;
 
 import java.math.BigDecimal;
+import java.util.List;
 
-public record OrderResponseDTO(CustomerDTO customer, String product_name, BigDecimal product_price,Integer piece) {
+public record OrderResponseDTO(
+        Long orderId,
+        CustomerDTO customer,
+        List<OrderItemDTO> orderItems
+) {
+    public record OrderItemDTO(
+            String productName,
+            BigDecimal productPrice,
+            Integer quantity
+    ) {}
 }
