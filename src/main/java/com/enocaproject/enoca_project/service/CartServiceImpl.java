@@ -171,7 +171,7 @@
 
             double totalPrice = cart.getTotalPrice().doubleValue();
 
-            return new CartResponseDTO(cart.getId(), customerDTO, cartItems, totalPrice); 
+            return new CartResponseDTO(cart.getId(), customerDTO, cartItems, totalPrice);
         }
 
     }
