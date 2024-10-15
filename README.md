@@ -126,9 +126,9 @@ Body:
 ```json
 
 {
-  "firstName": "John",
-  "lastName": "Doe",
-  "email": "john.doe@example.com"
+  "firstName": "Enes",
+  "lastName": "Akdoğan",
+  "email": "enesakdogan948@gmail.com"
 }
 ```
 ### Uygulama çalışırken ekran görüntüleri;
