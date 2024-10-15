@@ -13,6 +13,4 @@ public abstract class BaseEntity implements BaseModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Embedded
-    private BaseAdditionalFields baseAdditionalFields;
 }

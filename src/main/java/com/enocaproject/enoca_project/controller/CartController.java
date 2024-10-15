@@ -1,5 +1,6 @@
 package com.enocaproject.enoca_project.controller;
 
+import com.enocaproject.enoca_project.dto.CartResponseDTO; // DTO sınıfını ekle
 import com.enocaproject.enoca_project.entity.Cart;
 import com.enocaproject.enoca_project.service.CartService;
 import lombok.RequiredArgsConstructor;
@@ -15,33 +16,33 @@ public class CartController {
     private final CartService cartService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<Cart> getCart(@PathVariable Long id) {
-        Cart cart = cartService.GetCart(id);
-        return new ResponseEntity<>(cart, HttpStatus.OK);
+    public ResponseEntity<CartResponseDTO> getCart(@PathVariable Long id) {
+        CartResponseDTO cartResponse = cartService.GetCart(id);
+        return new ResponseEntity<>(cartResponse, HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Cart> updateCart(@PathVariable Long id, @RequestBody Cart cart) {
+    public ResponseEntity<CartResponseDTO> updateCart(@PathVariable Long id, @RequestBody Cart cart) {
         cart.setId(id);
-        Cart updatedCart = cartService.UpdateCart(cart);
-        return new ResponseEntity<>(updatedCart, HttpStatus.OK);
+        CartResponseDTO updatedCartResponse = cartService.UpdateCart(cart);
+        return new ResponseEntity<>(updatedCartResponse, HttpStatus.OK);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Cart> emptyCart(@PathVariable Long id) {
-        Cart emptiedCart = cartService.EmptyCart(id);
-        return new ResponseEntity<>(emptiedCart, HttpStatus.OK);
+    @DeleteMapping("/{id}/empty")
+    public ResponseEntity<CartResponseDTO> emptyCart(@PathVariable Long id) {
+        CartResponseDTO updatedCartResponse = cartService.EmptyCart(id);
+        return new ResponseEntity<>(updatedCartResponse, HttpStatus.OK);
     }
 
     @PostMapping("/{cartId}/products/{productId}")
-    public ResponseEntity<Cart> addProductToCart(@PathVariable Long cartId, @PathVariable Long productId, @RequestParam int quantity) {
-        Cart updatedCart = cartService.AddProductToCart(cartId, productId, quantity);
-        return new ResponseEntity<>(updatedCart, HttpStatus.OK);
+    public ResponseEntity<CartResponseDTO> addProductToCart(@PathVariable Long cartId, @PathVariable Long productId, @RequestParam int quantity) {
+        CartResponseDTO updatedCartResponse = cartService.AddProductToCart(cartId, productId, quantity);
+        return new ResponseEntity<>(updatedCartResponse, HttpStatus.OK);
     }
 
     @DeleteMapping("/{cartId}/products/{productId}")
-    public ResponseEntity<Cart> removeProductFromCart(@PathVariable Long cartId, @PathVariable Long productId) {
-        Cart updatedCart = cartService.RemoveProductFromCart(cartId, productId);
-        return new ResponseEntity<>(updatedCart, HttpStatus.OK);
+    public ResponseEntity<CartResponseDTO> removeProductFromCart(@PathVariable Long cartId, @PathVariable Long productId) {
+        CartResponseDTO updatedCartResponse = cartService.RemoveProductFromCart(cartId, productId);
+        return new ResponseEntity<>(updatedCartResponse, HttpStatus.OK);
     }
 }

@@ -13,6 +13,7 @@ public class Customer extends BaseEntity {
 
     private String firstName;
     private String lastName;
+    private String email;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "cart_id", referencedColumnName = "id")

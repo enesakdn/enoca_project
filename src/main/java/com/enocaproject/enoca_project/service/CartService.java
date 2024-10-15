@@ -1,14 +1,14 @@
 package com.enocaproject.enoca_project.service;
 
+import com.enocaproject.enoca_project.dto.CartResponseDTO; // DTO sınıfını ekle
 import com.enocaproject.enoca_project.entity.Cart;
 import org.springframework.stereotype.Service;
 
-
 @Service
 public interface CartService {
-    Cart GetCart(Long id);
-    Cart UpdateCart(Cart cart);
-    Cart EmptyCart(Long id);
-    Cart AddProductToCart(Long cartId, Long productId, int quantity);
-    Cart RemoveProductFromCart(Long cartId, Long productId);
+    CartResponseDTO GetCart(Long id);
+    CartResponseDTO UpdateCart(Cart cart);
+    CartResponseDTO EmptyCart(Long id);
+    CartResponseDTO AddProductToCart(Long cartId, Long productId, int quantity);
+    CartResponseDTO RemoveProductFromCart(Long cartId, Long productId);
 }
